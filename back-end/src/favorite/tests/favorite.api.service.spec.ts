@@ -1,10 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { FavoriteApiService } from './favorite.api.service';
-import { FavoriteService } from './favorite.service';
+import { FavoriteApiService } from '../favorite.api.service';
+import { FavoriteService } from '../favorite.service';
 import { UserService } from 'src/user/user.service';
 import { ActivityService } from 'src/activity/activity.service';
 import { getModelToken } from '@nestjs/mongoose';
-import { Favorite } from './favorite.schema';
+import { Favorite } from '../favorite.schema';
 import { HttpException } from '@nestjs/common';
 import { Model } from 'mongoose';
 
@@ -24,8 +24,14 @@ describe('FavoriteApiService', () => {
       findOne: jest.fn(),
     };
 
+    const mockFind = {
+      sort: jest.fn().mockReturnThis(),
+      exec: jest.fn(),
+    };
+
     const mockFavoriteModel = {
       create: jest.fn(),
+      find: jest.fn().mockReturnValue(mockFind),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -55,6 +61,77 @@ describe('FavoriteApiService', () => {
 
   it('should be defined', () => {
     expect(service).toBeDefined();
+  });
+
+  it('should get all favorites by user id successfully', async () => {
+    const mockUser = { id: 'user-id', email: 'test@test.com' };
+    const mockFavorites = [
+      {
+        _id: { toString: () => 'favorite-id-1' },
+        userId: 'user-id',
+        activityId: 'activity-id-1',
+        order: 0,
+      },
+      {
+        _id: { toString: () => 'favorite-id-2' },
+        userId: 'user-id',
+        activityId: 'activity-id-2',
+        order: 1,
+      },
+    ];
+
+    userService.getById.mockResolvedValue(mockUser as any);
+    const mockExec = jest.fn().mockResolvedValue(mockFavorites);
+    const mockSort = jest.fn().mockReturnValue({ exec: mockExec });
+    favoriteModel.find.mockReturnValue({
+      sort: mockSort,
+    } as any);
+
+    const result = await service.getAllFavoritesByUserId('user-id');
+
+    expect(result).toBeDefined();
+    expect(result).toHaveLength(2);
+    expect(result[0].activityId).toBe('activity-id-1');
+    expect(result[1].activityId).toBe('activity-id-2');
+    expect(userService.getById).toHaveBeenCalledWith('user-id');
+    expect(favoriteModel.find).toHaveBeenCalledWith({ userId: 'user-id' });
+  });
+
+  it('should throw error when userId is empty', async () => {
+    await expect(service.getAllFavoritesByUserId('')).rejects.toThrow(
+      HttpException,
+    );
+
+    expect(userService.getById).not.toHaveBeenCalled();
+    expect(favoriteModel.find).not.toHaveBeenCalled();
+  });
+
+  it('should throw error when user does not exist', async () => {
+    userService.getById.mockResolvedValue(null as any);
+
+    await expect(
+      service.getAllFavoritesByUserId('non-existent-user'),
+    ).rejects.toThrow(HttpException);
+
+    expect(userService.getById).toHaveBeenCalledWith('non-existent-user');
+    expect(favoriteModel.find).not.toHaveBeenCalled();
+  });
+
+  it('should throw error when get favorites fails', async () => {
+    const mockUser = { id: 'user-id', email: 'test@test.com' };
+    userService.getById.mockResolvedValue(mockUser as any);
+    const mockExec = jest.fn().mockRejectedValue(new Error('Database error'));
+    const mockSort = jest.fn().mockReturnValue({ exec: mockExec });
+    favoriteModel.find.mockReturnValue({
+      sort: mockSort,
+    } as any);
+
+    await expect(service.getAllFavoritesByUserId('user-id')).rejects.toThrow(
+      HttpException,
+    );
+
+    expect(userService.getById).toHaveBeenCalledWith('user-id');
+    expect(favoriteModel.find).toHaveBeenCalledWith({ userId: 'user-id' });
   });
 
   it('should create a favorite successfully', async () => {
