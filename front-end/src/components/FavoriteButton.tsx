@@ -1,6 +1,7 @@
 import { useSnackbar, useAuth } from "@/hooks";
 import CreateFavorite from "@/graphql/mutations/favorite/createFavorite";
 import DeleteFavorite from "@/graphql/mutations/favorite/deleteFavorite";
+import GetAllFavorites from "@/graphql/queries/favorite/getAllFavorites";
 import {
   CreateFavoriteMutation,
   CreateFavoriteMutationVariables,
@@ -49,6 +50,8 @@ export function FavoriteButton({ activityId, isFavorite }: FavoriteButtonProps) 
     CreateFavoriteMutation,
     CreateFavoriteMutationVariables
   >(CreateFavorite as any, {
+    refetchQueries: [GetAllFavorites],
+    awaitRefetchQueries: true,
     onCompleted: () => {
       setFavorite(activityId, true);
       snackbar.success("Activité ajoutée aux favoris");
@@ -63,6 +66,8 @@ export function FavoriteButton({ activityId, isFavorite }: FavoriteButtonProps) 
     DeleteFavoriteMutation,
     DeleteFavoriteMutationVariables
   >(DeleteFavorite as any, {
+    refetchQueries: [GetAllFavorites],
+    awaitRefetchQueries: true,
     onCompleted: () => {
       setFavorite(activityId, false);
       snackbar.success("Activité retirée des favoris");
