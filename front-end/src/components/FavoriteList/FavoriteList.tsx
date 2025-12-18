@@ -50,7 +50,7 @@ export function FavoriteList() {
         items={favorites.map((f) => f.id)}
         strategy={verticalListSortingStrategy}
       >
-        <Stack>
+        <Stack data-testid="favorites-list">
           {favorites.map((favorite) => (
             <SortableFavoriteItem key={favorite.id} favorite={favorite} />
           ))}
