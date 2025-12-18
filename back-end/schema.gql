@@ -22,7 +22,7 @@ input CreateActivityInput {
 
 input CreateFavoriteInput {
   activityId: String!
-  order: Int!
+  order: Int
 }
 
 """
@@ -36,6 +36,11 @@ type Favorite {
   order: Int!
 }
 
+input FavoriteOrderItem {
+  favoriteId: String!
+  order: Int!
+}
+
 type Mutation {
   createActivity(createActivityInput: CreateActivityInput!): Activity!
   createFavorite(createFavoriteInput: CreateFavoriteInput!): Favorite!
@@ -43,6 +48,8 @@ type Mutation {
   login(signInInput: SignInInput!): SignInDto!
   logout: Boolean!
   register(signUpInput: SignUpInput!): User!
+  reorderFavorites(reorderFavoritesInput: ReorderFavoritesInput!): [Favorite!]!
+  updateFavoriteOrder(updateFavoriteOrderInput: UpdateFavoriteOrderInput!): Favorite!
 }
 
 type Query {
@@ -54,6 +61,10 @@ type Query {
   getCities: [String!]!
   getLatestActivities: [Activity!]!
   getMe: User!
+}
+
+input ReorderFavoritesInput {
+  favorites: [FavoriteOrderItem!]!
 }
 
 type SignInDto {
@@ -70,6 +81,11 @@ input SignUpInput {
   firstName: String!
   lastName: String!
   password: String!
+}
+
+input UpdateFavoriteOrderInput {
+  favoriteId: String!
+  newOrder: Int!
 }
 
 type User {
