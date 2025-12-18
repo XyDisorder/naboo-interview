@@ -6,17 +6,21 @@ const httpLink = new HttpLink({
   credentials: "include",
 });
 
-const authLink = setContext((_, { headers }) => {
-  // Get the authentication token from localStorage if it exists
-  const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
-
-  // Return the headers to the context so httpLink can read them
-  return {
-    headers: {
-      ...headers,
-      jwt: token || "",
-    },
-  };
+const authLink = setContext((_, { headers = {} }) => {
+  // Client-side: get token from localStorage and send in header
+  // Server-side: don't send jwt header, let backend read from httpOnly cookie 'jwt'
+  if (typeof window !== "undefined") {
+    const token = localStorage.getItem("token");
+    return {
+      headers: {
+        ...headers,
+        ...(token && { jwt: token }),
+      },
+    };
+  }
+  
+  // Server-side: don't add jwt header, backend will read from cookie
+  return { headers };
 });
 
 export const graphqlClient = new ApolloClient({
