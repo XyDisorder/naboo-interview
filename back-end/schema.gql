@@ -38,6 +38,7 @@ type Favorite {
 type Mutation {
   createActivity(createActivityInput: CreateActivityInput!): Activity!
   createFavorite(createFavoriteInput: CreateFavoriteInput!): Favorite!
+  deleteFavorite(activityId: ID!): Boolean!
   login(signInInput: SignInInput!): SignInDto!
   logout: Boolean!
   register(signUpInput: SignUpInput!): User!

@@ -8,6 +8,7 @@ import {
   Logger,
 } from '@nestjs/common';
 import { User } from 'src/user/user.schema';
+import { Activity } from 'src/activity/activity.schema';
 
 @Injectable()
 export class FavoriteService {
@@ -54,6 +55,29 @@ export class FavoriteService {
         throw new ConflictException('Favorite already exists');
       }
       throw new InternalServerErrorException('Failed to create favorite');
+    }
+  }
+
+  /**
+   * Deletes a favorite by userId and activityId
+   * @param userId - The ID of the user
+   * @param activityId - The ID of the activity
+   * @returns True if the favorite was deleted, false otherwise
+   * @throws InternalServerErrorException if deletion fails
+   */
+  async deleteByIds(
+    userId: User['id'],
+    activityId: Activity['id'],
+  ): Promise<boolean> {
+    try {
+      const result = await this.favoriteModel.findOneAndDelete({
+        userId,
+        activityId,
+      });
+      return result !== null;
+    } catch (error) {
+      this.logger.error('Failed to delete favorite', error);
+      throw new InternalServerErrorException('Failed to delete favorite');
     }
   }
 

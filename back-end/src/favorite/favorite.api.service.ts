@@ -6,6 +6,7 @@ import { Favorite } from './favorite.schema';
 import { FavoriteMapper } from './mapper/favorite.mapper';
 import { ActivityService } from 'src/activity/activity.service';
 import { UserService } from 'src/user/user.service';
+import { Activity } from 'src/activity/activity.schema';
 
 @Injectable()
 export class FavoriteApiService {
@@ -89,9 +90,6 @@ export class FavoriteApiService {
 
       return await this.favoriteService.createFavorite(favorite);
     } catch (error) {
-      // FavoriteService already throws HttpException (ConflictException, InternalServerErrorException)
-      // UserService and ActivityService throw NotFoundException (HttpException)
-      // So we just need to log unexpected errors and re-throw HttpExceptions
       if (error instanceof HttpException) {
         throw error;
       }
@@ -99,6 +97,49 @@ export class FavoriteApiService {
       this.logger.error('Unexpected error creating favorite', error);
       throw new HttpException(
         'Failed to create favorite',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  /**
+   * Deletes a favorite for a user
+   * @param userId - The ID of the user (from JWT context)
+   * @param deleteFavoriteInput - The favorite data (activityId)
+   * @returns True if the favorite was deleted, false otherwise
+   * @throws HttpException if user or activity not found, or if favorite does not exist
+   */
+  async deleteFavorite(
+    userId: User['id'],
+    activityId: Activity['id'],
+  ): Promise<boolean> {
+    if (!userId || !activityId) {
+      throw new HttpException('Invalid input', HttpStatus.BAD_REQUEST);
+    }
+
+    const user = await this.userService.getById(userId);
+    if (!user) {
+      throw new HttpException(
+        'User not found. Cannot delete favorite.',
+        HttpStatus.NOT_FOUND,
+      );
+    }
+    try {
+      const deleted = await this.favoriteService.deleteByIds(
+        userId,
+        activityId,
+      );
+      if (!deleted) {
+        throw new HttpException('Favorite not found.', HttpStatus.NOT_FOUND);
+      }
+      return deleted;
+    } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
+      this.logger.error('Unexpected error deleting favorite', error);
+      throw new HttpException(
+        'Failed to delete favorite.',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }

@@ -44,4 +44,16 @@ export class FavoriteResolver {
       ...createFavoriteInput,
     });
   }
+
+  @Mutation(() => Boolean)
+  @UseGuards(AuthGuard)
+  async deleteFavorite(
+    @Context() context: ContextWithJWTPayload,
+    @Args('activityId', { type: () => ID }) activityId: string,
+  ): Promise<boolean> {
+    return this.favoriteApiService.deleteFavorite(
+      context.jwtPayload.id,
+      activityId,
+    );
+  }
 }
