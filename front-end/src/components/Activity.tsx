@@ -13,7 +13,7 @@ export function Activity({ activity }: ActivityProps) {
 
   return (
     <Grid.Col span={4}>
-      <Card shadow="sm" padding="lg" radius="md" withBorder>
+      <Card shadow="sm" padding="lg" radius="md" withBorder data-testid="activity-card">
         <Card.Section>
           <Image
             src="https://dummyimage.com/480x4:3"

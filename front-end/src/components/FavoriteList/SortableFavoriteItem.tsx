@@ -35,6 +35,8 @@ export function SortableFavoriteItem({ favorite }: SortableFavoriteItemProps) {
       radius="md"
       withBorder
       mb="md"
+      data-testid="favorite-item"
+      data-favorite-id={favorite.id}
     >
       <Group position="apart" align="flex-start">
         <Group spacing="xs" style={{ cursor: "grab" }} {...attributes} {...listeners}>

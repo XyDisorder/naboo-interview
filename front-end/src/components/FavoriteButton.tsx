@@ -117,6 +117,8 @@ export function FavoriteButton({ activityId, isFavorite }: FavoriteButtonProps) 
       loading={isLoading}
       disabled={isLoading}
       aria-label={displayFavorite ? "Retirer des favoris" : "Ajouter aux favoris"}
+      data-testid={`favorite-button-${activityId}`}
+      data-favorited={displayFavorite}
     >
       {isLoading ? (
         <Loader size="sm" />
