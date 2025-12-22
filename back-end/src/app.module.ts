@@ -42,8 +42,10 @@ import { ThrottlerGqlGuard } from './auth/throttler-gql.guard';
           playground: process.env.NODE_ENV !== 'production',
           buildSchemaOptions: { numberScalarMode: 'integer' },
           context: async ({ req, res }: { req: Request; res: Response }) => {
-            const token =
-              req.headers.jwt ?? (req.cookies && req.cookies['jwt']);
+            const { extractTokenFromRequest } = await import(
+              './auth/utils/jwt.utils'
+            );
+            const token = extractTokenFromRequest(req);
 
             let jwtPayload: PayloadDto | null = null;
             if (token) {

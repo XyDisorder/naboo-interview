@@ -38,7 +38,9 @@ export class ActivityResolver {
     return activity.owner;
   }
 
-  @Query(() => PaginatedActivities)
+  @Query(() => PaginatedActivities, {
+    description: 'Get all activities with pagination',
+  })
   async getActivities(
     @Args({ name: 'page', type: () => Int, nullable: true, defaultValue: 1 })
     page: number,
@@ -48,12 +50,16 @@ export class ActivityResolver {
     return this.activityService.findAll(page, limit);
   }
 
-  @Query(() => [Activity])
+  @Query(() => [Activity], {
+    description: 'Get the 3 latest activities',
+  })
   async getLatestActivities(): Promise<Activity[]> {
     return this.activityService.findLatest();
   }
 
-  @Query(() => PaginatedActivities)
+  @Query(() => PaginatedActivities, {
+    description: 'Get activities created by the authenticated user',
+  })
   @UseGuards(AuthGuard)
   async getActivitiesByUser(
     @Context() context: ContextWithJWTPayload,
@@ -65,35 +71,59 @@ export class ActivityResolver {
     return this.activityService.findByUser(context.jwtPayload.id, page, limit);
   }
 
-  @Query(() => [String])
+  @Query(() => [String], {
+    description: 'Get list of all cities where activities are available',
+  })
   async getCities(): Promise<string[]> {
     const cities = await this.activityService.findCities();
     return cities;
   }
 
-  @Query(() => PaginatedActivities)
+  @Query(() => PaginatedActivities, {
+    description:
+      'Get activities filtered by city, with optional filters for activity name and price',
+  })
   async getActivitiesByCity(
-    @Args('city') city: string,
+    @Args('city', { description: 'City name to filter activities' })
+    city: string,
     @Args({ name: 'page', type: () => Int, nullable: true, defaultValue: 1 })
     page: number,
     @Args({ name: 'limit', type: () => Int, nullable: true, defaultValue: 10 })
     limit: number,
-    @Args({ name: 'activity', nullable: true }) activity?: string,
-    @Args({ name: 'price', nullable: true, type: () => Int }) price?: number,
+    @Args({
+      name: 'activity',
+      nullable: true,
+      description: 'Filter by activity name (partial match)',
+    })
+    activity?: string,
+    @Args({
+      name: 'price',
+      nullable: true,
+      type: () => Int,
+      description: 'Filter by exact price',
+    })
+    price?: number,
   ): Promise<PaginatedActivities> {
     return this.activityService.findByCity(city, activity, price, page, limit);
   }
 
-  @Query(() => Activity)
-  async getActivity(@Args('id') id: string): Promise<Activity> {
+  @Query(() => Activity, {
+    description: 'Get a single activity by ID',
+  })
+  async getActivity(
+    @Args('id', { description: 'Activity ID' }) id: string,
+  ): Promise<Activity> {
     return this.activityService.findOne(id);
   }
 
-  @Mutation(() => Activity)
+  @Mutation(() => Activity, {
+    description: 'Create a new activity (requires authentication)',
+  })
   @UseGuards(AuthGuard)
   async createActivity(
     @Context() context: ContextWithJWTPayload,
-    @Args('createActivityInput') createActivity: CreateActivityInput,
+    @Args('createActivityInput', { description: 'Activity data' })
+    createActivity: CreateActivityInput,
   ): Promise<Activity> {
     return this.activityService.create(context.jwtPayload.id, createActivity);
   }

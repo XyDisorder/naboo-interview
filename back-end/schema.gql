@@ -25,26 +25,73 @@ A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date
 scalar DateTime
 
 type Mutation {
-  createActivity(createActivityInput: CreateActivityInput!): Activity!
+  """Create a new activity (requires authentication)"""
+  createActivity(
+    """Activity data"""
+    createActivityInput: CreateActivityInput!
+  ): Activity!
+
+  """Authenticate a user and receive a JWT token in a secure cookie"""
   login(signInInput: SignInInput!): SignInDto!
+
+  """Logout the current user and clear the authentication cookie"""
   logout: Boolean!
+
+  """Register a new user account"""
   register(signUpInput: SignUpInput!): User!
 }
 
+"""Paginated list of activities with metadata"""
 type PaginatedActivities {
+  """List of activities for the current page"""
   items: [Activity!]!
+
+  """Number of items per page"""
   limit: Int!
+
+  """Current page number"""
   page: Int!
+
+  """Total number of activities"""
   total: Int!
+
+  """Total number of pages"""
   totalPages: Int!
 }
 
 type Query {
+  """Get all activities with pagination"""
   getActivities(limit: Int = 10, page: Int = 1): PaginatedActivities!
-  getActivitiesByCity(activity: String, city: String!, limit: Int = 10, page: Int = 1, price: Int): PaginatedActivities!
+
+  """
+  Get activities filtered by city, with optional filters for activity name and price
+  """
+  getActivitiesByCity(
+    """Filter by activity name (partial match)"""
+    activity: String
+
+    """City name to filter activities"""
+    city: String!
+    limit: Int = 10
+    page: Int = 1
+
+    """Filter by exact price"""
+    price: Int
+  ): PaginatedActivities!
+
+  """Get activities created by the authenticated user"""
   getActivitiesByUser(limit: Int = 10, page: Int = 1): PaginatedActivities!
-  getActivity(id: String!): Activity!
+
+  """Get a single activity by ID"""
+  getActivity(
+    """Activity ID"""
+    id: String!
+  ): Activity!
+
+  """Get list of all cities where activities are available"""
   getCities: [String!]!
+
+  """Get the 3 latest activities"""
   getLatestActivities: [Activity!]!
   getMe: User!
 }
